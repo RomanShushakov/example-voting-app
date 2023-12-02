@@ -40,6 +40,25 @@ services:
       - front-tier
       - back-tier
 
+  result_wasm:
+    platform: wasi/wasm
+    build:
+      context: ./result_wasm
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db/postgres
+      RUST_BACKTRACE: full
+      DNS_SERVER: 127.0.0.11:53
+    restart: on-failure
+    runtime: io.containerd.wasmedge.v1
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - front-tier
+      - back-tier
+    ports:
+      - "8080:8080"
+
   worker:
     build:
       context: ./worker
@@ -60,6 +79,8 @@ services:
       interval: "5s"
     networks:
       - back-tier
+    ports:
+      - "6379:6379"
 
   db:
     image: postgres:15-alpine
@@ -74,6 +95,8 @@ services:
       interval: "5s"
     networks:
       - back-tier
+    ports:
+      - "5432:5432"
 
   # this service runs once to seed the database with votes
   # it won't run unless you specify the "seed" profile
