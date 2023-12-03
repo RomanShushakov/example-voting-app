@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 use std::net::SocketAddr;
 
-use serde::{Deserialize, Serialize};
+use serde_json::Map;
 use tokio_postgres::{NoTls, Error, types::ToSql, Row};
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode, Server};
@@ -135,14 +135,6 @@ impl Database
 }
 
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Vote 
-{
-    vote: String,
-    count: i64,
-}
-
-
 // CORS headers
 fn response_build(body: &str) -> Response<Body> 
 {
@@ -172,14 +164,17 @@ async fn handle_request(req: Request<Body>, db: Arc<Database>) -> Result<Respons
 
         (&Method::GET, "/votes") => 
         {
+            let mut votes = Map::new();
+
             let query = "SELECT vote, COUNT(id) AS count FROM votes GROUP BY vote;";
             let params = &[];
-
-            let votes = db.query(query, params).await.unwrap()
+            db.query(query, params).await.unwrap()
                 .into_iter()
-                .map(|row| Vote { vote: row.get(0), count: row.get(1) })
-                .collect::<Vec<Vote>>();
-
+                .for_each(|row| {
+                    let name: String = row.get(0);
+                    let count: i64 = row.get(1);
+                    votes.insert(name, count.into());
+                });
 
             Ok(response_build(serde_json::to_string(&votes)?.as_str()))
         }        
