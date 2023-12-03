@@ -1,25 +1,12 @@
-FROM node:18-slim
+FROM rust:1.74 as builder
+RUN mkdir -p /app/
+WORKDIR /app/
+COPY . /app/
+RUN cargo install --path .
 
-# add curl for healthcheck
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl tini && \
-    rm -rf /var/lib/apt/lists/*
-
-WORKDIR /usr/local/app
-
-# have nodemon available for local dev use (file watching)
-RUN npm install -g nodemon
-
-COPY package*.json ./
-
-RUN npm ci && \
- npm cache clean --force && \
- mv /usr/local/app/node_modules /node_modules
-
-COPY . .
-
-ENV PORT 80
-EXPOSE 80
-
-ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["node", "server.js"]
+FROM debian:bookworm-slim
+RUN mkdir -p /app/
+WORKDIR /app/
+RUN apt update && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /usr/local/cargo/bin/result /usr/local/bin/result
+EXPOSE 8081

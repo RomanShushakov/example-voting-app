@@ -24,21 +24,66 @@ services:
       - front-tier
       - back-tier
 
-  result:
-    build: ./result
-    # use nodemon rather than node for local dev
-    entrypoint: nodemon --inspect=0.0.0.0 server.js
+  result_client:
+    image: nginx:alpine
+    ports:
+      - 5001:80
+    volumes:
+      - ./result/client:/usr/share/nginx/html
     depends_on:
       db:
-        condition: service_healthy 
-    volumes:
-      - ./result:/usr/local/app
-    ports:
-      - "5001:80"
-      - "127.0.0.1:9229:9229"
+        condition: service_healthy
     networks:
       - front-tier
       - back-tier
+
+  result:
+    build:
+      context: ./result
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db/postgres
+      RUST_BACKTRACE: full
+      DNS_SERVER: 127.0.0.11:53
+    restart: on-failure
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - back-tier
+    ports:
+      - "8081:8081"
+    command: result
+
+  result_wasm_client:
+    image: nginx:alpine
+    ports:
+      - 5002:80
+    volumes:
+      - ./result_wasm/client:/usr/share/nginx/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - front-tier
+      - back-tier
+
+  result_wasm:
+    platform: wasi/wasm
+    build:
+      context: ./result_wasm
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db/postgres
+      RUST_BACKTRACE: full
+      DNS_SERVER: 127.0.0.11:53
+    restart: on-failure
+    runtime: io.containerd.wasmedge.v1
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - back-tier
+    ports:
+      - "8082:8082"
 
   worker:
     build:

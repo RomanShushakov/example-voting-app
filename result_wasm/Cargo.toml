@@ -1,0 +1,15 @@
+[package]
+name = "result_wasm"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.75"
+serde_json = "1.0.108"
+serde = { version = "1.0.193", features = ["derive"] }
+
+tokio_wasi = { version = "1.25.2", features = [ "io-util", "fs", "net", "time", "rt", "macros"] }
+tokio-postgres_wasi = "0.7.7"
+hyper_wasi = { version = "0.15.2", features = ["full"] }

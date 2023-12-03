@@ -26,7 +26,7 @@ app.controller('statsCtrl', function($scope) {
 
   var updateScores = function() {
     setInterval(async function() {
-      fetch("http://localhost:8082/votes")
+      fetch("http://localhost:8081/votes")
         .then(r => r.json())
         .then(json => {
           var a = parseInt(json.a || 0);

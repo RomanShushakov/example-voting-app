@@ -195,7 +195,7 @@ async fn main() -> Result<(), Error>
 {
     let database = Arc::new(Database::new());
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8082));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8081));
     let make_svc = make_service_fn(|_| 
         {
             let database = database.clone();
