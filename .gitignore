@@ -5,6 +5,5 @@ obj/
 .vs/
 node_modules/
 
-*Cargo.lock
 result/target
 result_wasm/target
