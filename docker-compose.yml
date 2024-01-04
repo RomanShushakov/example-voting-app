@@ -25,7 +25,7 @@ services:
       - back-tier
 
   result_client:
-    image: nginx:alpine
+    image: nginx:1.25.3-alpine
     ports:
       - 5001:80
     volumes:
@@ -55,7 +55,7 @@ services:
     command: result
 
   result_wasm_client:
-    image: nginx:alpine
+    image: nginx:1.25.3-alpine
     ports:
       - 5002:80
     volumes:
@@ -97,7 +97,7 @@ services:
       - back-tier
 
   redis:
-    image: redis:alpine
+    image: redis:7.2.3-alpine
     volumes:
       - "./healthchecks:/healthchecks"
     healthcheck:
@@ -109,7 +109,7 @@ services:
       - "6379:6379"
 
   db:
-    image: postgres:15-alpine
+    image: postgres:16.1-alpine
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
